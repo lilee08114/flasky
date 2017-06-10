@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block body%}
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+<p>you are trying to change your email address!</p><br/>
+{{wtf.quick_form(form)}}<br/>
+{%for i in get_flashed_messages()%}
+{{i}}
+{%endfor%}
+
+
+</body>
+</html>
+{%endblock%}

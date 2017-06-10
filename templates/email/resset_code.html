@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>resset confirm</title>
+</head>
+<body>
+<h2 allign='center'>Confirm your request of changing code!</h2><br/>
+<p>Dear user:</p><br/>
+&nbsp;&nbsp;<p>we have recieve requset that you want to change you code, please click the following link to resset your code, if this is not your willing, please ignore </p><br/>
+<a href="{{url_for('reg.check_mail',token=token, _external=True)}}">{{url_for('reg.check_mail',token=token,_external=True)}}</a>
+
+</body>
+</html>

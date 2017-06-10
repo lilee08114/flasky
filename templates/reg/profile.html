@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+{%block body%}
+<html>
+<head>
+	<title>my profile</title>
+</head>
+<body>
+<a href="{{url_for('reg.resset_code')}}">更改密码</a><br/>
+<a href="{{url_for('reg.ChangeMail')}}">更改电子邮件</a>
+{%for message in get_flashed_messages()%}
+{{message}}
+{%endfor%}
+</body>
+</html>
+{%endblock%}

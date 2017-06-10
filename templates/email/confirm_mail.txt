@@ -1,0 +1,5 @@
+Dear {{user.username}}:
+	Welcome to join us, please click the following links to confirm your email address, so that you could use the full function.
+		{{url_for('reg.confirm', token = token, _external=True)}}
+
+	your sincerely WEBPAGE!

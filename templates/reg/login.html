@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+<html>
+<head>
+	<title>log in</title>
+</head>
+{%block body%}
+<body>
+<div >
+{{wtf.quick_form(form)}}
+{% for message in get_flashed_messages() %}
+{{message}}
+{%endfor%}
+</div>
+</body>
+{%endblock%}
+</html>

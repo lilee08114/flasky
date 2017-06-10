@@ -1,0 +1,26 @@
+
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+<html>
+<head>
+	<title>Home_page</title>
+</head>
+{%block body%}
+{%for i in get_flashed_messages()%}
+{{i}}
+{%endfor%}
+<body><br/><strong>这是一个很吊的主页</strong><br/>
+<h1>
+	{%if not current_user.is_authenticated %}
+		系统侦测你还没登陆，不来一发？
+		<a href="{{url_for('reg.load_in')}}">好的，来一发</a>或者是
+		<a href="{{url_for('reg.regis')}}">还没有账号？</a>
+	{%endif%}
+</h1><br/>
+<h2>这里是正文 blablabla</h2>
+
+
+</body>
+{%endblock%}
+</html>

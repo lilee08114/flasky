@@ -1,0 +1,5 @@
+Confirm your request of changing code!
+Dear user:
+we have recieve requset that you want to change you code, please click the following link to resset your code, if this is not your willing, please ignore 
+{{url_for('reg.check_mail',token=token)}}
+

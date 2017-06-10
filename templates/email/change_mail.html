@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>change mail</title>
+</head>
+<body><p>Dear {{current_user.username}}:<br/>
+&nbsp;&nbsp;&nbsp;&nbsp;we recieve your request to change your email address, this is a highly secure related behavior, so please click the following links to confirm this is your willing, otherwise ignore this message!</p>
+<a href="{{url_for('reg.SetnewMail', token=token, _external=True)}}">{{url_for('reg.SetnewMail', token=token, _external=True)}}</a>
+
+</body>
+</html>
