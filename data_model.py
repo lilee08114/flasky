@@ -21,7 +21,29 @@ class Table1(UserMixin, Base):
 	usermail = Column(String(30), unique = True)
 	password_hash = Column(String(300))
 	confirm = Column(Boolean, default = False)
-	
+	role_id = Column(Integer, ForeignKey('roles.id'))
+	role = relationship('Role', back_populates='user')
+
+	def __init__(self, **kwargs):
+		super(Table1, self).__init__(**kwargs)
+
+		db_session=DBSession
+		if self.role is None:
+			if self.usermail == current_app.config['ADMIN_MAIL']:
+				self.role = db_session.query(Role).filter_by(name='owner').first()
+			else:
+				self.role = db_session.query(Role).filter_by(name='normal')
+			db_session.add(self)
+			db_session.commit()
+			db_session.close()
+
+	def can(self, action):
+		if (Permission.action & self.role.permission) == Permission.action:
+			return True
+		return False
+
+	def is_admin(self):
+		return self.role.permission == Permission.ADMIN
 
 	def verify_password(self, password):
 		return check_password_hash(self.password_hash, password)
@@ -61,9 +83,56 @@ class Table1(UserMixin, Base):
 		else:
 			return False
 
+class Role(UserMixin, Base):
+
+	__tablename__ = 'roles'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	name = Column(String(64), unique=True)
+	permission = Column(String(164))
+	default = Column(Boolean, default=False)
+
+	user = relationship('Table1', back_populates='role')
+
+	@staticmethod
+	def insert_role():
+		right = {'normal':(Permission.FOLLOW|
+							Permission.COMMENT|
+							Permission.WRITE, False),
+				 'manager':(Permission.COMMENT|
+				 			Permission.FOLLOW|
+				 			Permission.WRITE|
+				 			Permission.SHUTDOWN, True),
+				 'owner':(0xff, True)}
+		db_session=DBSession
+		for i in right:
+			temp_role = db_session.query(Role).filter_by(name=i).first()
+			if temp_role is None:
+				new_role = Role(name=i,
+								permission=right.get(i)[0],
+								default=right.get(i).[1])
+				db_session.add(new_role)
+		db_session.commit()
+		db_session.close()
 
 
+class Permission():
+	FOLLOW = 0x01
+	COMMENT = 0x02
+	WRITE = 0x04
+	SHUTDOWN = 0x08
+	ADMIN = 0x80
 
+#----------------下面这个类继承自AnonymousUserMixin，他所以具有所有之前未登录用户的特征
+#----------------此类的功能就是在原有的anoymoususer基础上添加了can和is_admion功能
+#----------------并将anonymous_user指向此类，因为此类继承原有功能和新添加的2个功能
+#----------------因此实现了向anonymous添加功能的作用
+class AnonymousUser(AnonumousUserMixin):
+	def can(self, action):
+		return False
+	def is_admin(self):
+		return False
+login_manager.anonymous_user = AnonymousUser
+#--------------------------------------------------------------------------------
 @login_manager.user_loader
 def load_user(user_id):
 	db_session = DBSession

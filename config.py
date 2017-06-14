@@ -12,6 +12,7 @@ class config():
 	MAIL_USE_TLS = True
 	MAIL_PORT = 587
 	DEBUG = True
+	ADMIN_MAIL=
 	SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://root:a123@localhost:3306/newtesttable'
 	def init_app(app):
 		pass
