@@ -1,11 +1,12 @@
 from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
+from functools import wraps
 
 Base = declarative_base()
 engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
@@ -23,28 +24,31 @@ class Table1(UserMixin, Base):
 	confirm = Column(Boolean, default = False)
 	role_id = Column(Integer, ForeignKey('roles.id'))
 	role = relationship('Role', back_populates='user')
-
+	#---------------------------------------------------赋值权限
 	def __init__(self, **kwargs):
 		super(Table1, self).__init__(**kwargs)
 
-		db_session=DBSession
+		
 		if self.role is None:
+			db_session=DBSession
 			if self.usermail == current_app.config['ADMIN_MAIL']:
 				self.role = db_session.query(Role).filter_by(name='owner').first()
 			else:
-				self.role = db_session.query(Role).filter_by(name='normal')
+				self.role = db_session.query(Role).filter_by(name='normal').first()
 			db_session.add(self)
 			db_session.commit()
 			db_session.close()
-
+	#---------------------------------------------------权限检查,及装饰器
 	def can(self, action):
-		if (Permission.action & self.role.permission) == Permission.action:
+		if (action & self.role.permission) == action:
 			return True
 		return False
 
 	def is_admin(self):
 		return self.role.permission == Permission.ADMIN
-
+	
+	
+	#---------------------------------------------------
 	def verify_password(self, password):
 		return check_password_hash(self.password_hash, password)
 
@@ -92,7 +96,7 @@ class Role(UserMixin, Base):
 	default = Column(Boolean, default=False)
 
 	user = relationship('Table1', back_populates='role')
-
+	#------------------------------------------------------插入角色
 	@staticmethod
 	def insert_role():
 		right = {'normal':(Permission.FOLLOW|
@@ -109,13 +113,16 @@ class Role(UserMixin, Base):
 			if temp_role is None:
 				new_role = Role(name=i,
 								permission=right.get(i)[0],
-								default=right.get(i).[1])
+								default=right.get(i)[1])
 				db_session.add(new_role)
 		db_session.commit()
 		db_session.close()
+	#----------------------------------------------------
+
 
 
 class Permission():
+	#-----------------------action below-----------------
 	FOLLOW = 0x01
 	COMMENT = 0x02
 	WRITE = 0x04
@@ -126,7 +133,7 @@ class Permission():
 #----------------此类的功能就是在原有的anoymoususer基础上添加了can和is_admion功能
 #----------------并将anonymous_user指向此类，因为此类继承原有功能和新添加的2个功能
 #----------------因此实现了向anonymous添加功能的作用
-class AnonymousUser(AnonumousUserMixin):
+class AnonymousUser(AnonymousUserMixin):
 	def can(self, action):
 		return False
 	def is_admin(self):
