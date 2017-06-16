@@ -24,23 +24,27 @@ class Table1(UserMixin, Base):
 	confirm = Column(Boolean, default = False)
 	role_id = Column(Integer, ForeignKey('roles.id'))
 	role = relationship('Role', back_populates='user')
+
 	#---------------------------------------------------赋值权限
 	def __init__(self, **kwargs):
 		super(Table1, self).__init__(**kwargs)
 
-		
+		print ('in the --init-- assign roles')
 		if self.role is None:
 			db_session=DBSession
 			if self.usermail == current_app.config['ADMIN_MAIL']:
 				self.role = db_session.query(Role).filter_by(name='owner').first()
 			else:
 				self.role = db_session.query(Role).filter_by(name='normal').first()
-			db_session.add(self)
-			db_session.commit()
+			print ('before commit ,let see what in role')
+			print (self.role)
 			db_session.close()
+			#db_session.commit()
 	#---------------------------------------------------权限检查,及装饰器
 	def can(self, action):
-		if (action & self.role.permission) == action:
+		db_session = DBSession
+		per = db_session.query(Table1).filter_by(username=self.username).first()
+		if (action & per.role.permission) == action:
 			return True
 		return False
 
@@ -88,17 +92,18 @@ class Table1(UserMixin, Base):
 			return False
 
 class Role(UserMixin, Base):
-
+	print ('before role table ')
 	__tablename__ = 'roles'
 	id = Column(Integer, primary_key=True, autoincrement=True)
 	name = Column(String(64), unique=True)
-	permission = Column(String(164))
+	permission = Column(Integer)
 	default = Column(Boolean, default=False)
 
 	user = relationship('Table1', back_populates='role')
 	#------------------------------------------------------插入角色
 	@staticmethod
 	def insert_role():
+		print ('in the static method')
 		right = {'normal':(Permission.FOLLOW|
 							Permission.COMMENT|
 							Permission.WRITE, False),
@@ -152,4 +157,7 @@ def load_user(user_id):
 
 def init_db():
 	#Base.metadata.drop_all(engine)
+	#print ('in the create all')
+	
 	Base.metadata.create_all(engine)
+	#Role.insert_role()

@@ -55,6 +55,7 @@ def regis():
 		#user = db_session.query(Table1).filter_by() #为什么不需要建立Table1对象？
 		token = newUser.generate_confirm_token()		
 		send_mail(newUser.usermail, 'confirm', 'email/confirm_mail',user=newUser, token=token)
+		login_user(newUser)
 		flash('and, a confirm letter has been sent to %s'%newUser.usermail)
 		db_session.close()
 		
