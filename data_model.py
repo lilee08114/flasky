@@ -125,26 +125,6 @@ class Role(UserMixin, Base):
 	#----------------------------------------------------
 
 
-<<<<<<< HEAD
-class Role(UserMixin, Base):
-	
-	__tablename__ = 'roles'
-	id = Column(Integer, primary_key=True, autoincrement=True)
-	role_name = Column(String(64), unique=True)
-	default = Column(String(128), default=True)
-	permission = Column(String(128))
-	#roles = relationship(Table1,  backref='ex_role')
-	
-	
-	def Role_list():
-	
-		return {'normal':0x01,
-				'manager':0x04,
-				'owner':0x80}
-	
-	
-=======
-
 class Permission():
 	#-----------------------action below-----------------
 	FOLLOW = 0x01
