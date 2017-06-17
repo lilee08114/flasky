@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, Boolean
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, 		 				 Boolean, DateTime, Text
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from flask_login import UserMixin, AnonymousUserMixin
@@ -7,6 +7,7 @@ from . import login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from functools import wraps
+from datetime import datetime
 
 Base = declarative_base()
 engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
@@ -23,6 +24,15 @@ class Table1(UserMixin, Base):
 	password_hash = Column(String(300))
 	confirm = Column(Boolean, default = False)
 	role_id = Column(Integer, ForeignKey('roles.id'))
+	
+	realname = Column(String(0,24))
+	gender = Column(String(0,4))
+	age = Column(String(0,2))
+	location = Column(String(0,64))
+	reg_time = Column(Datetime(), default = dateime.utcnow())
+	last_time = Column(Datetime(), default = dateime.utcnow())
+	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
+	
 	role = relationship('Role', back_populates='user')
 
 	#---------------------------------------------------赋值权限

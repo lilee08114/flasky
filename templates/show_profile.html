@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+
+<html>
+{%block body%}
+<head>
+	<title>show profile</title>
+</head>
+<body>
+	{%if current_user.realname or current_user.gender%}
+		<p>{%if current_user.realname%}
+				Name:&nbsp;{{current_user.realname}}&nbsp;&nbsp;&nbsp;&nbsp;
+			{%endif%}
+			{%if current_user.gender%}
+				Gender:&nbsp;{{current_user.gender}}
+			{%endif%}</p><br/>
+	{%endif%}
+	{%if current_user.age or current_user.location%}
+		<p>{%if current_user.age%}
+				Age:&nbsp;{{current_user.age}}&nbsp;&nbsp;&nbsp;&nbsp;
+			{%endif%}
+			{%if current_user.location%}
+				Location:&nbsp;{{current_user.location}}
+			{%endif%}</p><br/>
+	{%endif%}
+	{%if current_user.reg_time or current_user.last_time%}
+		<p>{%if current_user.reg_time%}
+				Reg &nbsp;Time:&nbsp;{{current_user.reg_time}}&nbsp;&nbsp;&nbsp;&nbsp;
+			{%endif%}
+			{%if current_user.last_time%}
+				Last&nbsp;time:&nbsp;{{current_user.last_time}}
+			{%endif%}</p><br/>
+	{%endif%}
+	{%if current_user.introduction%}
+		{{current_user.introduction}}
+	{%endif%}
+			
+</body>
+{%endblock%}
+</html>

@@ -7,7 +7,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from ..main import main
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from ..email import send_mail
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+
 
 init_db()
 

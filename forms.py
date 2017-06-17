@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, 		 				SelectField, IntegerField, DateTimeField
 from wtforms.validators import Required, Email, Length,EqualTo
 from .data_model import Table1, DBSession
 from wtforms import ValidationError
@@ -58,4 +58,12 @@ class SetNewCode(FlaskForm):
 
 class SetNewMail(FlaskForm):
 	new_mail = StringField('New Mail', validators=[Required(), Email()])
+	submit = SubmitField('submit')
+	
+class EditProfile(FlaskForm):
+	realname = StringField('Real name', validators=[Length(0,8)])
+	gender = SelectField('Gender')
+	age = IntegerField('Age', validators=[Length(0,2)])
+	location = StringField('Location', validators=[Length(0,64)])
+	introduction = StringField('Introduction')
 	submit = SubmitField('submit')
