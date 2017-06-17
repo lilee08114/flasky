@@ -12,8 +12,10 @@
 		<a href="{{url_for('reg.load_out')}}">Log Out</a>
 		&nbsp;&nbsp;&nbsp;<a href="{{url_for('reg.my_profile')}}">My&nbsp;Profile</a>
 
-	{%endif%}<br/>
-
+	{%endif%}
+	&nbsp;&nbsp;&nbsp;<a href="{{url_for('reg.normal_right')}}">normal&nbsp;right&nbsp;test</a>&nbsp;&nbsp;
+	<a href="{{url_for('reg.admin_right')}}">admin&nbsp;test</a>
+	<br/>
 	<h2>welcome
 	{%if current_user.is_authenticated%}
 	{{current_user.username}}

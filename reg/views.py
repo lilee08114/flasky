@@ -1,6 +1,7 @@
 from flask import render_template,redirect, url_for,flash,request,current_app
 from . import reg
-from ..data_model import Table1, DBSession, init_db
+from ..data_model import Table1, DBSession, init_db, Permission
+from ..decorator import need_permission
 from ..forms import loadForm, regForm, changeCode, Forget_code, SetNewCode,SetNewMail
 from flask_login import login_user, current_user, logout_user, login_required
 from ..main import main
@@ -54,6 +55,7 @@ def regis():
 		#user = db_session.query(Table1).filter_by() #为什么不需要建立Table1对象？
 		token = newUser.generate_confirm_token()		
 		send_mail(newUser.usermail, 'confirm', 'email/confirm_mail',user=newUser, token=token)
+		login_user(newUser)
 		flash('and, a confirm letter has been sent to %s'%newUser.usermail)
 		db_session.close()
 		
@@ -192,6 +194,20 @@ def SetnewMail(token):
 	db_session.close()
 	flash('your email address has been changed!')
 	return redirect(url_for('main.home_page'))
+
+#----------------------------------------------------------权限测试
+@reg.route('/normal-test-right/')
+@need_permission(Permission.FOLLOW|Permission.COMMENT|Permission.WRITE)
+@login_required
+def normal_right():
+	return render_template('normal_test.html')
+
+@reg.route('/owner-test-right/')
+@need_permission(Permission.ADMIN)
+@login_required
+def admin_right():
+	return render_template('admin_test.html')
+
 
 
 

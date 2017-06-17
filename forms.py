@@ -37,16 +37,7 @@ class changeCode(FlaskForm):
 							EqualTo('new_code2', message='code not the same')])
 	new_code2 = PasswordField('new code again', validators=[Required()])
 	submit = SubmitField('Submit')
-'''
-	pc = ''
-	def validate_previous_code(self,field):
-		pc = field.data
-		pass
 
-	def validate_new_code1(self, field):
-		if field.data == self.pc:
-			raise ValidationError('new code couldn\'t be same sa the old one')
-'''
 
 class Forget_code(FlaskForm):
 	Your_email = StringField('Your Email',validators=[Required(), Email()])
