@@ -42,6 +42,9 @@ class Table1(UserMixin, Base):
 			#db_session.commit()
 	#---------------------------------------------------权限检查,及装饰器
 	def can(self, action):
+		'''
+		这里为什么用self会出错？role也不必去DB查询啊
+		'''
 		db_session = DBSession
 		per = db_session.query(Table1).filter_by(username=self.username).first()
 		if (action & per.role.permission) == action:
