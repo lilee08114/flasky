@@ -62,7 +62,7 @@ class SetNewMail(FlaskForm):
 	
 class EditProfile(FlaskForm):
 	realname = StringField('Real name', validators=[Length(0,8)])
-	gender = SelectField('Gender')
+	gender = SelectField('Gender', choices=['Man','Woman'])
 	age = IntegerField('Age', validators=[Length(0,2)])
 	location = StringField('Location', validators=[Length(0,64)])
 	introduction = StringField('Introduction')

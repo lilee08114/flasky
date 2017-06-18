@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, 		 				 Boolean, DateTime, Text
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime	,Boolean, DateTime, Text
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from flask_login import UserMixin, AnonymousUserMixin
@@ -25,12 +25,12 @@ class Table1(UserMixin, Base):
 	confirm = Column(Boolean, default = False)
 	role_id = Column(Integer, ForeignKey('roles.id'))
 	
-	realname = Column(String(0,24))
-	gender = Column(String(0,4))
-	age = Column(String(0,2))
-	location = Column(String(0,64))
-	reg_time = Column(Datetime(), default = dateime.utcnow())
-	last_time = Column(Datetime(), default = dateime.utcnow())
+	realname = Column(String(24))
+	gender = Column(String(4))
+	age = Column(String(2))
+	location = Column(String(64))
+	reg_time = Column(DateTime(), default = datetime.utcnow())
+	last_time = Column(DateTime(), default = datetime.utcnow())
 	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
 	
 	role = relationship('Role', back_populates='user')
@@ -157,7 +157,7 @@ class AnonymousUser(AnonymousUserMixin):
 		return False
 login_manager.anonymous_user = AnonymousUser
 #--------------------------------------------------------------------------------
->>>>>>> eeeb89388303be63a80e4ee558b3d50636c800b5
+
 @login_manager.user_loader
 def load_user(user_id):
 	db_session = DBSession
