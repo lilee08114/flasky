@@ -26,7 +26,7 @@ class Table1(UserMixin, Base):
 	role_id = Column(Integer, ForeignKey('roles.id'))
 	
 	realname = Column(String(24))
-	gender = Column(String(4))
+	gender = Column(String(8))
 	age = Column(String(2))
 	location = Column(String(64))
 	reg_time = Column(DateTime(), default = datetime.utcnow())

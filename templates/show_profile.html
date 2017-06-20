@@ -32,8 +32,9 @@
 			{%endif%}</p><br/>
 	{%endif%}
 	{%if current_user.introduction%}
-		{{current_user.introduction}}
+		<p>self&nbsp;introduction: {{current_user.introduction}}</p><br/>
 	{%endif%}
+	<a href="{{url_for('main.edit_profile')}}">Edit&nbsp;Profile</a>
 			
 </body>
 {%endblock%}
