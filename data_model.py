@@ -10,7 +10,7 @@ from functools import wraps
 from datetime import datetime
 
 Base = declarative_base()
-engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
+engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information',echo=True)
 session_factory = sessionmaker(bind = engine)
 DBSession = scoped_session(session_factory)
 
@@ -39,14 +39,12 @@ class Table1(UserMixin, Base):
 	def __init__(self, **kwargs):
 		super(Table1, self).__init__(**kwargs)
 
-		print ('in the --init-- assign roles')
 		if self.role is None:
 			db_session=DBSession
 			if self.usermail == current_app.config['ADMIN_MAIL']:
 				self.role = db_session.query(Role).filter_by(name='owner').first()
 			else:
 				self.role = db_session.query(Role).filter_by(name='normal').first()
-			print ('before commit ,let see what in role')
 			print (self.role)
 			db_session.close()
 			#db_session.commit()
@@ -99,13 +97,12 @@ class Table1(UserMixin, Base):
 			db_session.commit()
 			db_session.close()
 
-			print ('confirm state has been set to True')
 			return True
 		else:
 			return False
 
 class Role(UserMixin, Base):
-	print ('before role table ')
+	
 	__tablename__ = 'roles'
 	id = Column(Integer, primary_key=True, autoincrement=True)
 	name = Column(String(64), unique=True)
@@ -117,7 +114,8 @@ class Role(UserMixin, Base):
 	@staticmethod
 	def insert_role():
 		print ('in the static method')
-		right = {'normal':(Permission.FOLLOW|
+		right = {'shut':(0x00,False),
+				 'normal':(Permission.FOLLOW|
 							Permission.COMMENT|
 							Permission.WRITE, False),
 				 'manager':(Permission.COMMENT|

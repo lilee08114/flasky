@@ -1,8 +1,8 @@
 from . import main
 from flask import render_template, flash, request,redirect,url_for
 from flask_login import login_required, current_user
-from ..forms import EditProfile
-from ..data_model import DBSession, Table1, Permission
+from ..forms import EditProfile,for_manager_editor
+from ..data_model import DBSession, Table1, Permission, Role
 from ..decorator import need_permission
 
 @main.route('/')
@@ -60,11 +60,30 @@ def manager_chart():
 			flash('this user is not exist!')
 			return render_template('main/manager_system.html')
 		else:
-			return redirect(url_for('main.manager_editor',user=temp))
+			return redirect(url_for('main.manager_editor',usermail=request.form['mail']))
 	return render_template('main/manager_system.html')
 
 
-@main.route('/edit_profile_manager/', methods=['GET','POST'])
+@main.route('/edit_profile_manager/<usermail>', methods=['GET','POST'])
 @need_permission(Permission.FOLLOW|Permission.COMMENT|Permission.WRITE|Permission.SHUTDOWN)
-def manager_editor(user):
-	pass
+def manager_editor(usermail):
+	form = for_manager_editor()
+	db_session=DBSession
+	user = db_session.query(Table1).filter_by(usermail=usermail).first()
+	form.role.choices = [(temp.id, temp.name) for temp in db_session.query(Role).filter(Role.permission<80).all()]
+	#form.role.choices = [(temp.id, temp.name) for temp in Role.query().filter(permission<80).all()]
+	form.role.default = user.id
+
+	if form.validate_on_submit():
+		user.confrim = form.confirm_state.data
+		user.role = db_session.query(Role).filter(Role.id==form.role.data).first()
+		user.location = form.location.data
+		db_session.add(user)
+		db_session.commit()
+		flash('%s\'s profile has been mdified'%user.username)
+		db_session.close()
+		
+		return render_template('main/manager_editor.html',form=form)
+	confirm_state = user.confirm
+	location = user.location
+	return render_template('main/manager_editor.html', form=form)

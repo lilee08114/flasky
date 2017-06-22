@@ -67,3 +67,9 @@ class EditProfile(FlaskForm):
 	location = StringField('Location', validators=[Length(0,64)])
 	introduction = StringField('Introduction')
 	submit = SubmitField('submit')
+
+class for_manager_editor(FlaskForm):
+	confirm_state = BooleanField('confirm state')
+	role = SelectField('role', coerce=int)
+	location = StringField('location')
+	submit = SubmitField('submit')
