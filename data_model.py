@@ -8,9 +8,11 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from functools import wraps
 from datetime import datetime
+from . import create_app
+
 
 Base = declarative_base()
-engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information',echo=True)
+engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
 session_factory = sessionmaker(bind = engine)
 DBSession = scoped_session(session_factory)
 
@@ -34,20 +36,69 @@ class Table1(UserMixin, Base):
 	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
 	
 	role = relationship('Role', back_populates='user')
+	articles = relationship('Post', back_populates='author',lazy='dynamic')
 
+	#---------------------------添加虚假信息，便于测试
+	@staticmethod
+	def insert_message(count):
+		import forgery_py
+		db_session=DBSession
+		from random import randint
+		for i in range(count):
+			user=Table1(username=forgery_py.internet.user_name(True),
+				    usermail=forgery_py.internet.email_address(),
+				    password=forgery_py.lorem_ipsum.word() ,
+				    confirm=True,
+				    realname=forgery_py.name.full_name(),
+				    gender=['Man','Woman'][randint(0,1)],
+					age=randint(18,80),
+					location=forgery_py.address.city(),
+					reg_time=forgery_py.date.date(True),
+					last_time=forgery_py.date.date(True),
+					introduction=forgery_py.lorem_ipsum.sentence())
+			db_session.add(user)
+			print (11111111111111111111111111)
+		try:
+			db_session.commit()
+		except:
+			db_session.rollback()
+			raise
+		finally:
+			print ('aaaaaaaaaaaa')
+			db_session.close()
+	
 	#---------------------------------------------------赋值权限
 	def __init__(self, **kwargs):
 		super(Table1, self).__init__(**kwargs)
-
+		'''
+		此处如果不使用try， 在静态添加虚假测试数据时会因为没有请求，而没有请求
+		上下文，也就没有应用上下文（应用上下文的2重方式：1随着请求上下文的出现
+		自动出现 2显式的使用app_context声明），所以需要显式声明应用上下文，
+		同时和正常情况下有请求时相区分开。
+		但，这是一种好的方式吗？
+		'''
 		if self.role is None:
 			db_session=DBSession
-			if self.usermail == current_app.config['ADMIN_MAIL']:
-				self.role = db_session.query(Role).filter_by(name='owner').first()
+			try:
+				current_app.config['ADMIN_MAIL']
+			except RuntimeError:
+				web = create_app()
+				with web.app_context():
+					if self.usermail == current_app.config['ADMIN_MAIL']:
+						self.role = db_session.query(Role).filter_by(name='owner').first()
+					else:
+						self.role = db_session.query(Role).filter_by(name='normal').first()
 			else:
-				self.role = db_session.query(Role).filter_by(name='normal').first()
-			print (self.role)
-			db_session.close()
-			#db_session.commit()
+				
+				if self.usermail == current_app.config['ADMIN_MAIL']:
+						self.role = db_session.query(Role).filter_by(name='owner').first()
+				else:
+					self.role = db_session.query(Role).filter_by(name='normal').first()
+			finally:
+				print ('HHHHHHHHHHHHHHHHHHHHH')
+				#print (self.role)
+				db_session.close()
+				#db_session.commit()
 	#---------------------------------------------------权限检查,及装饰器
 	def can(self, action):
 		'''
@@ -135,6 +186,37 @@ class Role(UserMixin, Base):
 		db_session.close()
 	#----------------------------------------------------
 
+class Post(UserMixin, Base):
+
+	__tablename__ = 'posts'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	article = Column(Text())
+	post_time = Column(DateTime(), default=datetime.utcnow())
+	author_id =	Column(Integer, ForeignKey('table1.id'))
+
+	author = relationship('Table1', back_populates='articles')
+
+	@staticmethod
+	def insert_post(count):
+		from random import randint
+		import forgery_py
+		db_session=DBSession
+		user_count = db_session.query(Table1).count()
+		for i in range(count):
+			auth = db_session.query(Table1).offset(randint(0,user_count-1)).first()
+			newPost=Post(article=forgery_py.lorem_ipsum.sentences(randint(1,3)),
+					 post_time=forgery_py.date.date(True),
+					 author=auth)
+			db_session.add(newPost)
+			print (222222222222222222222)
+		try:
+			db_session.commit()
+		except:
+			db_session.rollback()
+			raise
+		finally:
+			print ('bbbbbbbbbbbbbbbb')			
+			db_session.close()
 
 class Permission():
 	#-----------------------action below-----------------
@@ -168,7 +250,9 @@ def load_user(user_id):
 
 def init_db():
 	#Base.metadata.drop_all(engine)
-	#print ('in the create all')
+
 	
 	Base.metadata.create_all(engine)
 	#Role.insert_role()
+	Table1.insert_message(5)
+	Post.insert_post(5)

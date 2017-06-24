@@ -7,34 +7,38 @@
 	<title>show profile</title>
 </head>
 <body>
-	{%if current_user.realname or current_user.gender%}
-		<p>{%if current_user.realname%}
-				Name:&nbsp;{{current_user.realname}}&nbsp;&nbsp;&nbsp;&nbsp;
+	{%if target_user.realname or target_user.gender%}
+		<p>{%if target_user.realname%}
+				Name:&nbsp;{{target_user.realname}}&nbsp;&nbsp;&nbsp;&nbsp;
 			{%endif%}
-			{%if current_user.gender%}
-				Gender:&nbsp;{{current_user.gender}}
+			{%if target_user.gender%}
+				Gender:&nbsp;{{target_user.gender}}
 			{%endif%}</p><br/>
 	{%endif%}
-	{%if current_user.age or current_user.location%}
-		<p>{%if current_user.age%}
-				Age:&nbsp;{{current_user.age}}&nbsp;&nbsp;&nbsp;&nbsp;
+	{%if target_user.age or target_user.location%}
+		<p>{%if target_user.age%}
+				Age:&nbsp;{{target_user.age}}&nbsp;&nbsp;&nbsp;&nbsp;
 			{%endif%}
-			{%if current_user.location%}
-				Location:&nbsp;{{current_user.location}}
+			{%if target_user.location%}
+				Location:&nbsp;{{target_user.location}}
 			{%endif%}</p><br/>
 	{%endif%}
-	{%if current_user.reg_time or current_user.last_time%}
-		<p>{%if current_user.reg_time%}
-				Reg &nbsp;Time:&nbsp;{{current_user.reg_time}}&nbsp;&nbsp;&nbsp;&nbsp;
+	{%if target_user.reg_time or target_user.last_time%}
+		<p>{%if target_user.reg_time%}
+				Reg &nbsp;Time:&nbsp;{{target_user.reg_time}}&nbsp;&nbsp;&nbsp;&nbsp;
 			{%endif%}
-			{%if current_user.last_time%}
-				Last&nbsp;time:&nbsp;{{current_user.last_time}}
+			{%if target_user.last_time%}
+				Last&nbsp;time:&nbsp;{{target_user.last_time}}
 			{%endif%}</p><br/>
 	{%endif%}
-	{%if current_user.introduction%}
-		<p>self&nbsp;introduction: {{current_user.introduction}}</p><br/>
+	{%if target_user.introduction%}
+		<p>self&nbsp;introduction: {{target_user.introduction}}</p><br/>
 	{%endif%}
-	<a href="{{url_for('main.edit_profile')}}">Edit&nbsp;Profile</a>
+	<a href="{{url_for('main.edit_profile')}}">Edit&nbsp;Profile</a><br/>
+	<p>articles list:</p><br/>
+	{%for i in article_object%}
+	{{i.article}}<br/>
+	{%endfor%}
 			
 </body>
 {%endblock%}

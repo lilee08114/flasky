@@ -1,13 +1,24 @@
 from . import main
 from flask import render_template, flash, request,redirect,url_for
 from flask_login import login_required, current_user
-from ..forms import EditProfile,for_manager_editor
-from ..data_model import DBSession, Table1, Permission, Role
+from ..forms import EditProfile,for_manager_editor,show_latest_articles
+from ..data_model import DBSession, Table1, Permission, Role, Post
 from ..decorator import need_permission
+from datetime import datetime
 
-@main.route('/')
+@main.route('/', methods=['GET','POST'])
 def home_page():
-	return render_template('home.html')
+	form = show_latest_articles()
+	db_session=DBSession
+	if form.validate_on_submit() and current_user.can(Permission.WRITE):
+		new_post = Post(article = form.post_message.data,
+						author_id = current_user.id)
+		db_session.add(new_post)
+		db_session.commit()
+		flash('your message has been uploaded!')
+		return redirect(url_for('main.home_page'))
+	latest_posts = db_session.query(Post).order_by(Post.post_time.desc()).all()
+	return render_template('home.html',form=form, posts=latest_posts)
 #---------------------------------------------------展示及编辑个人资料页	
 @main.route('/profile/<username>/')
 @login_required
@@ -15,7 +26,13 @@ def show_profile(username):
 	'''
 	可以使用表格来排版？
 	'''
-	return render_template('show_profile.html')
+	print (username)
+	db_session=DBSession
+	#这里使用filter(username==username)居然是无效的！
+	target_user=db_session.query(Table1).filter_by(username=username).first()
+	#这里为什么是Post.post_time....
+	article_obj = target_user.articles.order_by(Post.post_time.desc()).all()
+	return render_template('show_profile.html',target_user=target_user,article_object=article_obj)
 	
 @main.route('/edit_profile/', methods=['GET','POST'])
 @login_required

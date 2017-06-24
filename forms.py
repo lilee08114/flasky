@@ -73,3 +73,7 @@ class for_manager_editor(FlaskForm):
 	role = SelectField('role', coerce=int)
 	location = StringField('location')
 	submit = SubmitField('submit')
+
+class show_latest_articles(FlaskForm):
+	post_message = StringField('record here！', validators=[Required(),Length(1,480)])
+	submit = SubmitField('Submit')
