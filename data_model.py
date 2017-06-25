@@ -57,15 +57,16 @@ class Table1(UserMixin, Base):
 					last_time=forgery_py.date.date(True),
 					introduction=forgery_py.lorem_ipsum.sentence())
 			db_session.add(user)
-			print (11111111111111111111111111)
-		try:
-			db_session.commit()
-		except:
-			db_session.rollback()
-			raise
-		finally:
-			print ('aaaaaaaaaaaa')
-			db_session.close()
+			#这里出现了一个问题，因为有__init__语句存在，不能多次添加table对象
+			#然后一次性commit，只能挨个add和commit，否则会失败，why？
+			try:
+				db_session.commit()
+			except:
+				db_session.rollback()
+				raise
+			finally:
+				print ('aaaaaaaaaaaa')
+				db_session.close()
 	
 	#---------------------------------------------------赋值权限
 	def __init__(self, **kwargs):
@@ -209,6 +210,7 @@ class Post(UserMixin, Base):
 					 author=auth)
 			db_session.add(newPost)
 			print (222222222222222222222)
+			#而这一段，因为没有__init__，所以可以多次添加add，一次性commit
 		try:
 			db_session.commit()
 		except:
@@ -225,6 +227,16 @@ class Permission():
 	WRITE = 0x04
 	SHUTDOWN = 0x08
 	ADMIN = 0x80
+
+class Pagination():
+
+	def __init__(self, per_page=10):
+		self.per_page=per_page
+		db_session=DBSession
+		art_num = db_session.query(Post).order_by(Post.post_time.desc()).count()
+	def iter_pages(self):
+		from math import ceil
+		
 
 #----------------下面这个类继承自AnonymousUserMixin，他所以具有所有之前未登录用户的特征
 #----------------此类的功能就是在原有的anoymoususer基础上添加了can和is_admion功能
@@ -254,5 +266,5 @@ def init_db():
 	
 	Base.metadata.create_all(engine)
 	#Role.insert_role()
-	Table1.insert_message(5)
-	Post.insert_post(5)
+	#Table1.insert_message(15)
+	#Post.insert_post(15)
