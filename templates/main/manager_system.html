@@ -6,7 +6,7 @@
 	<title>managers</title>
 </head>
 <body><p>Edit someone's profile</p><br/>
-<form>
+<form method='post'>
 	enter the one's mail which you wanna edit:<input type="text" name="mail">
 	<input type="submit" value="submit"><br/>
 	{%for i in get_flashed_messages()%}

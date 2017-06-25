@@ -8,6 +8,8 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app
 from functools import wraps
 from datetime import datetime
+from . import create_app
+
 
 Base = declarative_base()
 engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
@@ -34,22 +36,70 @@ class Table1(UserMixin, Base):
 	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
 	
 	role = relationship('Role', back_populates='user')
+	articles = relationship('Post', back_populates='author',lazy='dynamic')
 
+	#---------------------------添加虚假信息，便于测试
+	@staticmethod
+	def insert_message(count):
+		import forgery_py
+		db_session=DBSession
+		from random import randint
+		for i in range(count):
+			user=Table1(username=forgery_py.internet.user_name(True),
+				    usermail=forgery_py.internet.email_address(),
+				    password=forgery_py.lorem_ipsum.word() ,
+				    confirm=True,
+				    realname=forgery_py.name.full_name(),
+				    gender=['Man','Woman'][randint(0,1)],
+					age=randint(18,80),
+					location=forgery_py.address.city(),
+					reg_time=forgery_py.date.date(True),
+					last_time=forgery_py.date.date(True),
+					introduction=forgery_py.lorem_ipsum.sentence())
+			db_session.add(user)
+			#这里出现了一个问题，因为有__init__语句存在，不能多次添加table对象
+			#然后一次性commit，只能挨个add和commit，否则会失败，why？
+			try:
+				db_session.commit()
+			except:
+				db_session.rollback()
+				raise
+			finally:
+				print ('aaaaaaaaaaaa')
+				db_session.close()
+	
 	#---------------------------------------------------赋值权限
 	def __init__(self, **kwargs):
 		super(Table1, self).__init__(**kwargs)
-
-		print ('in the --init-- assign roles')
+		'''
+		此处如果不使用try， 在静态添加虚假测试数据时会因为没有请求，而没有请求
+		上下文，也就没有应用上下文（应用上下文的2重方式：1随着请求上下文的出现
+		自动出现 2显式的使用app_context声明），所以需要显式声明应用上下文，
+		同时和正常情况下有请求时相区分开。
+		但，这是一种好的方式吗？
+		'''
 		if self.role is None:
 			db_session=DBSession
-			if self.usermail == current_app.config['ADMIN_MAIL']:
-				self.role = db_session.query(Role).filter_by(name='owner').first()
+			try:
+				current_app.config['ADMIN_MAIL']
+			except RuntimeError:
+				web = create_app()
+				with web.app_context():
+					if self.usermail == current_app.config['ADMIN_MAIL']:
+						self.role = db_session.query(Role).filter_by(name='owner').first()
+					else:
+						self.role = db_session.query(Role).filter_by(name='normal').first()
 			else:
-				self.role = db_session.query(Role).filter_by(name='normal').first()
-			print ('before commit ,let see what in role')
-			print (self.role)
-			db_session.close()
-			#db_session.commit()
+				
+				if self.usermail == current_app.config['ADMIN_MAIL']:
+						self.role = db_session.query(Role).filter_by(name='owner').first()
+				else:
+					self.role = db_session.query(Role).filter_by(name='normal').first()
+			finally:
+				print ('HHHHHHHHHHHHHHHHHHHHH')
+				#print (self.role)
+				db_session.close()
+				#db_session.commit()
 	#---------------------------------------------------权限检查,及装饰器
 	def can(self, action):
 		'''
@@ -99,13 +149,12 @@ class Table1(UserMixin, Base):
 			db_session.commit()
 			db_session.close()
 
-			print ('confirm state has been set to True')
 			return True
 		else:
 			return False
 
 class Role(UserMixin, Base):
-	print ('before role table ')
+	
 	__tablename__ = 'roles'
 	id = Column(Integer, primary_key=True, autoincrement=True)
 	name = Column(String(64), unique=True)
@@ -117,7 +166,8 @@ class Role(UserMixin, Base):
 	@staticmethod
 	def insert_role():
 		print ('in the static method')
-		right = {'normal':(Permission.FOLLOW|
+		right = {'shut':(0x00,False),
+				 'normal':(Permission.FOLLOW|
 							Permission.COMMENT|
 							Permission.WRITE, False),
 				 'manager':(Permission.COMMENT|
@@ -137,6 +187,38 @@ class Role(UserMixin, Base):
 		db_session.close()
 	#----------------------------------------------------
 
+class Post(UserMixin, Base):
+
+	__tablename__ = 'posts'
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	article = Column(Text())
+	post_time = Column(DateTime(), default=datetime.utcnow())
+	author_id =	Column(Integer, ForeignKey('table1.id'))
+
+	author = relationship('Table1', back_populates='articles')
+
+	@staticmethod
+	def insert_post(count):
+		from random import randint
+		import forgery_py
+		db_session=DBSession
+		user_count = db_session.query(Table1).count()
+		for i in range(count):
+			auth = db_session.query(Table1).offset(randint(0,user_count-1)).first()
+			newPost=Post(article=forgery_py.lorem_ipsum.sentences(randint(1,3)),
+					 post_time=forgery_py.date.date(True),
+					 author=auth)
+			db_session.add(newPost)
+			print (222222222222222222222)
+			#而这一段，因为没有__init__，所以可以多次添加add，一次性commit
+		try:
+			db_session.commit()
+		except:
+			db_session.rollback()
+			raise
+		finally:
+			print ('bbbbbbbbbbbbbbbb')			
+			db_session.close()
 
 class Permission():
 	#-----------------------action below-----------------
@@ -145,6 +227,16 @@ class Permission():
 	WRITE = 0x04
 	SHUTDOWN = 0x08
 	ADMIN = 0x80
+
+class Pagination():
+
+	def __init__(self, per_page=10):
+		self.per_page=per_page
+		db_session=DBSession
+		art_num = db_session.query(Post).order_by(Post.post_time.desc()).count()
+	def iter_pages(self):
+		from math import ceil
+		
 
 #----------------下面这个类继承自AnonymousUserMixin，他所以具有所有之前未登录用户的特征
 #----------------此类的功能就是在原有的anoymoususer基础上添加了can和is_admion功能
@@ -170,7 +262,9 @@ def load_user(user_id):
 
 def init_db():
 	#Base.metadata.drop_all(engine)
-	#print ('in the create all')
+
 	
 	Base.metadata.create_all(engine)
 	#Role.insert_role()
+	#Table1.insert_message(15)
+	#Post.insert_post(15)

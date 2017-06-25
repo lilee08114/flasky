@@ -10,17 +10,22 @@
 {%for i in get_flashed_messages()%}
 {{i}}
 {%endfor%}
-<body><br/><strong>这是一个很吊的主页</strong><br/>
-<h1>
+<body><br/><strong>这是主页</strong><br/>
+<h4>
 	{%if not current_user.is_authenticated %}
-		系统侦测你还没登陆，不来一发？
-		<a href="{{url_for('reg.load_in')}}">好的，来一发</a>或者是
-		<a href="{{url_for('reg.regis')}}">还没有账号？</a>
+		您还没有登陆，需要登陆后才能发表留言，您可以
+		<a href="{{url_for('reg.load_in')}}">登陆</a>或者是
+		<a href="{{url_for('reg.regis')}}">申请账号</a>
+	{%else%}
+		<h4>{{wtf.quick_form(form)}}</h4>
 	{%endif%}
-</h1><br/>
-<h2>这里是正文 blablabla</h2>
-
-
+</h4><br/>
+{%for i in posts%}
+<p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;Posted at invalid for contemporary
+ moment(i.post_time).fromNow</p>
+<br/>
+<p>{{i.article}}</p>
+{%endfor%}
 </body>
 {%endblock%}
 </html>

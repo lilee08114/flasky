@@ -1,0 +1,17 @@
+
+<!DOCTYPE html>
+{%extends 'navbar.html'%}
+{%import 'bootstrap/wtf.html' as wtf%}
+{%block body%}
+<html>
+<head>
+	<title>editor</title>
+</head>
+<body>
+	{{wtf.quick_form(form)}}<br/>
+	{%for i in get_flashed_messages()%}
+		{{i}}
+	{%endfor%}
+</body>
+</html>
+{%endblock%}
