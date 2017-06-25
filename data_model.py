@@ -209,7 +209,7 @@ class Post(UserMixin, Base):
 					 post_time=forgery_py.date.date(True),
 					 author=auth)
 			db_session.add(newPost)
-			print (222222222222222222222)
+
 			#而这一段，因为没有__init__，所以可以多次添加add，一次性commit
 		try:
 			db_session.commit()
@@ -231,11 +231,58 @@ class Permission():
 class Pagination():
 
 	def __init__(self, per_page=10):
+		from math import ceil
 		self.per_page=per_page
 		db_session=DBSession
-		art_num = db_session.query(Post).order_by(Post.post_time.desc()).count()
+		self.art_num = db_session.query(Post).count()
+		self.pages = ceil(self.art_num/self.per_page)
+	
 	def iter_pages(self):
-		from math import ceil
+		#返回页数列表
+		return range(1,self.pages+1)
+	#-------------------------------------
+	def render(self,current_page):
+		list = range(1,self.pages+1)
+		newList = []
+		if len(list) < 8:
+			return list
+		for i in list:
+			if abs(i-current_page)<3:
+				newList.append(i)
+		elif newList[0]==1:
+			newList.append('...')
+			newList.append(list[-1])
+			return newList
+		elif newList[-1] == list[-1]:
+			newList.insert(0,1)
+			newList.insert(1,'...')
+			return newList
+		else:
+			newList.append('...')
+			newList.append(list[-1])
+			newList.insert(0,1)
+			newList.insert(1,'...')
+			return newList
+		
+	#-------------------------------------
+	
+	def item(self,current_page):
+		#返回每页的post查询对象
+		return db_session.query(Post).order_by(Post.post_time.desc()).offset(self.per_page*current_page).limit(self.per_page).all()
+		
+	def has_pev(self, current_page):
+		#看是否在第一页
+		if current_page==1 
+			return False
+		else:
+			return True
+			
+	def has_next(self, current_page):
+		#看是否在最后一页
+		if current_page==self.pages:
+			return False
+		return True
+		
 		
 
 #----------------下面这个类继承自AnonymousUserMixin，他所以具有所有之前未登录用户的特征
