@@ -230,10 +230,10 @@ class Permission():
 
 class Pagination():
 
-	def __init__(self, per_page=10):
+	def __init__(self, db_session,per_page=5 ):
 		from math import ceil
+		self.db_session=db_session
 		self.per_page=per_page
-		db_session=DBSession
 		self.art_num = db_session.query(Post).count()
 		self.pages = ceil(self.art_num/self.per_page)
 	
@@ -242,24 +242,25 @@ class Pagination():
 		return range(1,self.pages+1)
 	#-------------------------------------
 	def render(self,current_page):
-		list = range(1,self.pages+1)
+		list1 = range(1,self.pages+1)
 		newList = []
-		if len(list) < 8:
-			return list
-		for i in list:
+		for i in list1:
 			if abs(i-current_page)<3:
 				newList.append(i)
+		if len(list1) < 8:
+			return list1
+		
 		elif newList[0]==1:
 			newList.append('...')
-			newList.append(list[-1])
+			newList.append(list1[-1])
 			return newList
-		elif newList[-1] == list[-1]:
+		elif newList[-1] == list1[-1]:
 			newList.insert(0,1)
 			newList.insert(1,'...')
 			return newList
 		else:
 			newList.append('...')
-			newList.append(list[-1])
+			newList.append(list1[-1])
 			newList.insert(0,1)
 			newList.insert(1,'...')
 			return newList
@@ -268,11 +269,11 @@ class Pagination():
 	
 	def item(self,current_page):
 		#返回每页的post查询对象
-		return db_session.query(Post).order_by(Post.post_time.desc()).offset(self.per_page*current_page).limit(self.per_page).all()
+		return self.db_session.query(Post).order_by(Post.post_time.desc()).offset(self.per_page*(current_page-1)).limit(self.per_page).all()
 		
-	def has_pev(self, current_page):
+	def has_pre(self, current_page):
 		#看是否在第一页
-		if current_page==1 
+		if current_page==1:
 			return False
 		else:
 			return True
@@ -313,5 +314,5 @@ def init_db():
 	
 	Base.metadata.create_all(engine)
 	#Role.insert_role()
-	#Table1.insert_message(15)
-	#Post.insert_post(15)
+	#Table1.insert_message(30)
+	#Post.insert_post(40)

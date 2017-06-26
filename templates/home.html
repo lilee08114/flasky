@@ -21,11 +21,12 @@
 	{%endif%}
 </h4><br/>
 {%for i in posts%}
-<p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;Posted at invalid for contemporary
- moment(i.post_time).fromNow</p>
+<p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;Posted at TIME<!--invalid for contemporary
+ moment(i.post_time).fromNow--></p>
 <br/>
 <p>{{i.article}}</p>
 {%endfor%}
+{%include '_page.html'%}
 </body>
 {%endblock%}
 </html>

@@ -2,7 +2,7 @@ from . import main
 from flask import render_template, flash, request,redirect,url_for
 from flask_login import login_required, current_user
 from ..forms import EditProfile,for_manager_editor,show_latest_articles
-from ..data_model import DBSession, Table1, Permission, Role, Post
+from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination
 from ..decorator import need_permission
 from datetime import datetime
 
@@ -10,6 +10,15 @@ from datetime import datetime
 def home_page():
 	form = show_latest_articles()
 	db_session=DBSession
+	#-------------------------------------------
+	pag = Pagination(db_session=db_session)
+	current_page = request.args.get('page', 1, type=int) #获取当前页面页数，默认为1
+	pag_list = pag.render(current_page)  #页号序列
+	pag_item = pag.item(current_page) #每页对应的查询对象
+	pre=pag.has_pre(current_page) #是否还有前一页
+	nex=pag.has_next(current_page)  #时候还有后一页
+
+
 	if form.validate_on_submit() and current_user.can(Permission.WRITE):
 		new_post = Post(article = form.post_message.data,
 						author_id = current_user.id)
@@ -17,8 +26,10 @@ def home_page():
 		db_session.commit()
 		flash('your message has been uploaded!')
 		return redirect(url_for('main.home_page'))
-	latest_posts = db_session.query(Post).order_by(Post.post_time.desc()).all()
-	return render_template('home.html',form=form, posts=latest_posts)
+	#latest_posts = db_session.query(Post).order_by(Post.post_time.desc()).all()
+	return render_template('home.html',form=form, posts=pag_item, 
+								current_page=current_page, page_list=pag_list,
+								pre=pre, nex=nex)
 #---------------------------------------------------展示及编辑个人资料页	
 @main.route('/profile/<username>/')
 @login_required

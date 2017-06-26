@@ -1,0 +1,22 @@
+
+
+<p>
+{%if pre%}
+	<a href="{{url_for('main.home_page',page=current_page-1)}}">上一页</a>
+{%else%}
+	上一页
+{%endif%}
+{%for i in page_list%}
+	{%if i == '...'%}
+		{{i}}
+	{%elif i == current_page%}
+		{{i}}
+	{%else%}
+		<a href="{{url_for('main.home_page',page=i)}}">{{i}}</a>
+	{%endif%}
+{%endfor%}
+{%if nex%}
+	<a href="{{url_for('main.home_page',page=current_page+1)}}">下一页</a>
+{%else%}
+	下一页
+{%endif%}
