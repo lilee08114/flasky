@@ -229,7 +229,11 @@ class Permission():
 	ADMIN = 0x80
 
 class Pagination():
-
+	'''
+	该类返回需要在每个页面下面渲染的页数列表
+	根据当前页面数，返回每页应该渲染的查询对象
+	判断是否还有’前一页‘或者’后一页‘
+	'''
 	def __init__(self, db_session,per_page=5 ):
 		from math import ceil
 		self.db_session=db_session
@@ -240,7 +244,7 @@ class Pagination():
 	def iter_pages(self):
 		#返回页数列表
 		return range(1,self.pages+1)
-	#-------------------------------------
+	
 	def render(self,current_page):
 		list1 = range(1,self.pages+1)
 		newList = []
