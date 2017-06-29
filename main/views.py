@@ -6,6 +6,7 @@ from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination
 from ..decorator import need_permission
 from datetime import datetime
 
+
 @main.route('/', methods=['GET','POST'])
 def home_page():
 	form = show_latest_articles()
@@ -37,7 +38,6 @@ def show_profile(username):
 	'''
 	可以使用表格来排版？
 	'''
-	print (username)
 	db_session=DBSession
 	#这里使用filter(username==username)居然是无效的！
 	target_user=db_session.query(Table1).filter_by(username=username).first()

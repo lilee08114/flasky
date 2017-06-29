@@ -17,16 +17,22 @@
 		<a href="{{url_for('reg.load_in')}}">登陆</a>或者是
 		<a href="{{url_for('reg.regis')}}">申请账号</a>
 	{%else%}
-		<h4>{{wtf.quick_form(form)}}</h4>
+		<h4>{{wtf.quick_form(form)}}</h4>		
+		{{ pagedown.include_pagedown() }}		
 	{%endif%}
 </h4><br/>
 {%for i in posts%}
 <p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;Posted at TIME<!--invalid for contemporary
  moment(i.post_time).fromNow--></p>
 <br/>
-<p>{{i.article}}</p>
-{%endfor%}
+<!--<p>{{i.article}}</p>-->
+{{i.article_html |safe}}
+{%endfor%}	
 {%include '_page.html'%}
 </body>
+
 {%endblock%}
+
+
+
 </html>

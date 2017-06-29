@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime	,Boolean, DateTime, Text
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime	,Boolean, DateTime, Text, event
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from flask_login import UserMixin, AnonymousUserMixin
@@ -9,6 +9,8 @@ from flask import current_app
 from functools import wraps
 from datetime import datetime
 from . import create_app
+import bleach
+from markdown import markdown
 
 
 Base = declarative_base()
@@ -96,7 +98,6 @@ class Table1(UserMixin, Base):
 				else:
 					self.role = db_session.query(Role).filter_by(name='normal').first()
 			finally:
-				print ('HHHHHHHHHHHHHHHHHHHHH')
 				#print (self.role)
 				db_session.close()
 				#db_session.commit()
@@ -192,10 +193,28 @@ class Post(UserMixin, Base):
 	__tablename__ = 'posts'
 	id = Column(Integer, primary_key=True, autoincrement=True)
 	article = Column(Text())
+	article_html = Column(Text())
 	post_time = Column(DateTime(), default=datetime.utcnow())
 	author_id =	Column(Integer, ForeignKey('table1.id'))
 
 	author = relationship('Table1', back_populates='articles')
+
+	@staticmethod
+	def art_html(target, value, oldvalue, initiator):
+		#event.listen(Post.article, 'set', Post.art_html)
+		#target是Post对象
+		#value是监听到的Post.article
+		#oldvalue 无值
+		#initiator是根据set的orm.event对象？
+		#markdown 将markdown文本转化成html，bleach-clean清除html中不合法的标记
+		#linkify是将文本中的网址转化成可点击的。
+		#为什么不用__init__?因为__init__在插入post对象之前执行，而那时article没有值
+		#无法转化成html
+
+		target.article_html = bleach.linkify(bleach.clean(markdown(value, output_format='html5'), 
+					tags=['a', 'abbr', 'acronym', 'b', 'blockquote', 
+					'code','em', 'i', 'li', 'ol', 'pre', 'strong', 
+					'ul','h1', 'h2', 'h3', 'p']))
 
 	@staticmethod
 	def insert_post(count):
@@ -219,6 +238,7 @@ class Post(UserMixin, Base):
 		finally:
 			print ('bbbbbbbbbbbbbbbb')			
 			db_session.close()
+event.listen(Post.article, 'set', Post.art_html)
 
 class Permission():
 	#-----------------------action below-----------------

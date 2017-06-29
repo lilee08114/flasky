@@ -3,6 +3,7 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField, 		 		
 from wtforms.validators import Required, Email, Length,EqualTo
 from .data_model import Table1, DBSession
 from wtforms import ValidationError
+from flask_pagedown.fields import PageDownField
 
 class loadForm(FlaskForm):
 	email = StringField('Email', validators=[Required(),Length(1,64),Email()])
@@ -81,6 +82,6 @@ class for_manager_editor(FlaskForm):
 	submit = SubmitField('submit')
 
 class show_latest_articles(FlaskForm):
-	post_message = StringField('record here！', validators=[Required(),Length(1,480)])
+	post_message = PageDownField('record here?', validators=[Required(),Length(1,480)])
 	submit = SubmitField('Submit')
 
