@@ -85,3 +85,6 @@ class show_latest_articles(FlaskForm):
 	post_message = PageDownField('record here?', validators=[Required(),Length(1,480)])
 	submit = SubmitField('Submit')
 
+class edit_my_article(FlaskForm):
+	edit_message = PageDownField('edit your article!', validators=[Required(),Length(1,480)])
+	submit = SubmitField('Submit')

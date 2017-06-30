@@ -210,11 +210,12 @@ class Post(UserMixin, Base):
 		#linkify是将文本中的网址转化成可点击的。
 		#为什么不用__init__?因为__init__在插入post对象之前执行，而那时article没有值
 		#无法转化成html
+		#clean的清除，并不彻底，只是将不符的tag直接显示出去，而不生效
 
 		target.article_html = bleach.linkify(bleach.clean(markdown(value, output_format='html5'), 
 					tags=['a', 'abbr', 'acronym', 'b', 'blockquote', 
 					'code','em', 'i', 'li', 'ol', 'pre', 'strong', 
-					'ul','h1', 'h2', 'h3', 'p']))
+					'ul', 'h3', 'p']))
 
 	@staticmethod
 	def insert_post(count):
