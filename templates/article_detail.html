@@ -1,0 +1,7 @@
+{%extends 'navbar.html'%}
+{%block body%}
+<br/>
+<hr/>
+<p>作者：{{post.author.username}}</p><br/>
+<p>{{post.article_html|safe}}</p>
+{%endblock%}

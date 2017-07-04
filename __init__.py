@@ -4,11 +4,15 @@ from flask_bootstrap import Bootstrap
 from .config import config
 from flask_login import LoginManager
 from flask_mail import Mail
+from flask_pagedown import PageDown
+from flask_moment import Moment
 
 
 #db = init_db()							   #初始化数据库连接，？？？？？？
 login_manager = LoginManager()
 mail = Mail()
+pagedown = PageDown()
+moment = Moment()
 
 def create_app():
 	app = Flask(__name__)
@@ -19,7 +23,9 @@ def create_app():
 	app.register_blueprint(main)
 	bootstrap = Bootstrap(app)
 	login_manager.init_app(app)
+	moment.init_app(app)
 	mail.init_app(app)
+	pagedown.init_app(app)
 	login_manager.session_protection = 'strong'
 	login_manager.login_view = 'reg.load_in'
 	return app

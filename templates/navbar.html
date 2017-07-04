@@ -1,9 +1,12 @@
-<!DOCTYPE html>
-<html>
+
+
+
 <head>
-	<title></title>
-</head>
-<body><ul class=nav navbar-nav navbar-right>
+	<title>MInsk</title>
+	{{moment.include_jquery()}}
+	{{moment.include_moment()}}
+</head><font size="5">
+<ul class=nav navbar-nav navbar-right>
 	<a href=" {{url_for('main.home_page')}}">HOME</a>&nbsp;&nbsp;
 	{%if not current_user.is_authenticated %}
 		<a href="{{url_for('reg.load_in')}}">Log In</a>
@@ -18,7 +21,7 @@
 	&nbsp;&nbsp;&nbsp;<a href="{{url_for('reg.normal_right')}}">normal&nbsp;right&nbsp;test</a>&nbsp;&nbsp;
 	<a href="{{url_for('reg.admin_right')}}">admin&nbsp;test</a>
 	&nbsp;&nbsp;
-	<a href="{{url_for('main.manager_chart')}} ">WatchDog</a>
+	<a href="{{url_for('main.manager_chart')}} ">WatchDog</a></font>
 	<br/>
 	<h2>welcome
 	{%if current_user.is_authenticated%}
@@ -26,9 +29,14 @@
 	{%else%}
 	Stranger
 	{%endif%}
+	
 	 </h2>
+	
 </ul>
+<!--很奇怪，extends这句如果放在前面，会导致对改模板的继承失效-->
+<!--如果放在最后面，则会导致很多效果没有了，包括markdown的include-pagedown。-->
+{% extends "bootstrap/base.html" %}
 {%block body%}
+
 {%endblock%}
-</body>
-</html>
+
