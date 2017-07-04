@@ -24,17 +24,8 @@ def home_page():
 	pre=pag.has_pre(current_page) #是否还有前一页
 	nex=pag.has_next(current_page)  #时候还有后一页
 
-	if art_id != 0 and art.author.id==current_user.id:
-		print (111111111111111)
-		form2.edit_message.data = art.article
-		art_id = 0
-		return render_template('home.html',form=form2, posts=pag_item, 
-								current_page=current_page, page_list=pag_list,
-								pre=pre, nex=nex)
-
 	if form2.validate_on_submit():
-		print (2222222222222222)
-		art.article = form2.edit_messgae.data
+		art.article = form2.edit_message.data
 		art.article_html=bleach.linkify(bleach.clean(markdown(art.article, output_format='html5'), 
 					tags=['a', 'abbr', 'acronym', 'b', 'blockquote', 
 					'code','em', 'i', 'li', 'ol', 'pre', 'strong', 
@@ -44,15 +35,22 @@ def home_page():
 		flash('your article has been modified!')
 		return redirect(url_for('main.home_page'))
 
+	if art_id != 0 and art.author.id==current_user.id:
+		form2.edit_message.data = art.article
+		art_id = 0
+		return render_template('home.html',form=form2, posts=pag_item, 
+								current_page=current_page, page_list=pag_list,
+								pre=pre, nex=nex)
+
+	
 	if form.validate_on_submit() and current_user.can(Permission.WRITE):
-		print (333333333333333)
 		new_post = Post(article = form.post_message.data,
 						author_id = current_user.id)
 		db_session.add(new_post)
 		db_session.commit()
 		flash('your message has been uploaded!')
 		return redirect(url_for('main.home_page'))
-	print (4444444444444444444444)
+
 	#latest_posts = db_session.query(Post).order_by(Post.post_time.desc()).all()
 	return render_template('home.html',form=form, posts=pag_item, 
 								current_page=current_page, page_list=pag_list,

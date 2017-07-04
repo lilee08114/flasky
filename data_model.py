@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime	,Boolean, DateTime, Text, event
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Boolean, DateTime, Text, event
 from sqlalchemy.orm import sessionmaker, relationship, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from flask_login import UserMixin, AnonymousUserMixin
@@ -18,6 +18,11 @@ engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_U
 session_factory = sessionmaker(bind = engine)
 DBSession = scoped_session(session_factory)
 
+follow = Table('follow', Base.metadata,
+	 	Column('followed', Integer, ForeignKey('table1.id'),primary_key=True),
+		Column('follower', Integer, ForeignKey('table1.id'),primary_key=True))
+		Column('time', DateTime, default=datetime.utcnow())
+
 class Table1(UserMixin, Base):
 
 	__tablename__ = 'table1'
@@ -36,6 +41,7 @@ class Table1(UserMixin, Base):
 	reg_time = Column(DateTime(), default = datetime.utcnow())
 	last_time = Column(DateTime(), default = datetime.utcnow())
 	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
+	
 	
 	role = relationship('Role', back_populates='user')
 	articles = relationship('Post', back_populates='author',lazy='dynamic')
