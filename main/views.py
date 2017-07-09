@@ -2,7 +2,7 @@ from . import main
 from flask import render_template, flash, request,redirect,url_for
 from flask_login import login_required, current_user
 from ..forms import EditProfile,for_manager_editor,show_latest_articles,edit_my_article
-from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination
+from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination, Follow
 from ..decorator import need_permission
 from datetime import datetime
 import bleach
@@ -40,7 +40,7 @@ def home_page():
 		art_id = 0
 		return render_template('home.html',form=form2, posts=pag_item, 
 								current_page=current_page, page_list=pag_list,
-								pre=pre, nex=nex)
+								pre=pre, nex=nex,fl=current_user.followed_list())
 
 	
 	if form.validate_on_submit() and current_user.can(Permission.WRITE):
@@ -50,11 +50,11 @@ def home_page():
 		db_session.commit()
 		flash('your message has been uploaded!')
 		return redirect(url_for('main.home_page'))
-
+	
 	#latest_posts = db_session.query(Post).order_by(Post.post_time.desc()).all()
 	return render_template('home.html',form=form, posts=pag_item, 
 								current_page=current_page, page_list=pag_list,
-								pre=pre, nex=nex)
+								pre=pre, nex=nex, fl=current_user.followed_list())
 	#return render_template('navbar.html')
 #---------------------------------------------------展示及编辑个人资料页	
 @main.route('/profile/<username>/')
@@ -147,3 +147,42 @@ def article_detail():
 	art_id = request.args.get('id',type=int)
 	post = db_session.query(Post).filter_by(id=art_id).first()
 	return render_template('article_detail.html', post=post)
+
+@main.route('/follow/<int:his_id>')
+@need_permission(Permission.FOLLOW)
+@login_required
+def followsomeone(his_id):
+	db_session=DBSession
+	new_follow = Follow(followed_id = his_id,
+				follower_id = current_user.id)	
+	try:
+		db_session.add(new_follow)
+		db_session.commit()
+		flash('follow sucessfully, you will recieve his dynamics')
+	except:
+		db_session.rollback()
+		flash('error!')
+		raise
+	finally:
+		db_session.close()
+	return redirect(request.args.get('next') or request.referrer)
+
+@main.route('/unsubscribe/<int:his_id>')
+@need_permission(Permission.FOLLOW)
+@login_required
+def unsubscribe(his_id):
+	db_session=DBSession
+	follow_relation = db_session.query(Follow).filter(Follow.followed_id==his_id).\
+		filter(Follow.follower_id==current_user.id).first()
+	db_session.delete(follow_relation)
+	try:	
+		db_session.commit()
+		flash('your follow relationship has been removed')
+	except:
+		db_session.rollback()
+		flash('fail yo remove your follow relationship!')
+		raise
+	finally:
+		db_session.close()
+	return redirect(request.args.get('next') or request.referrer)
+		

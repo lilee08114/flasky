@@ -1,5 +1,5 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Boolean, DateTime, Text, event
-from sqlalchemy.orm import sessionmaker, relationship, scoped_session
+from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime, Boolean, DateTime, Text, event, Table
+from sqlalchemy.orm import sessionmaker, relationship, scoped_session,backref
 from sqlalchemy.ext.declarative import declarative_base
 from flask_login import UserMixin, AnonymousUserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,17 +14,19 @@ from markdown import markdown
 
 
 Base = declarative_base()
-engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information')
+engine = create_engine('mysql+mysqlconnector://root:a123@localhost:3306/Flaskr_User_information', echo=True)
 session_factory = sessionmaker(bind = engine)
 DBSession = scoped_session(session_factory)
 
-follow = Table('follow', Base.metadata,
-	 	Column('followed', Integer, ForeignKey('table1.id'),primary_key=True),
-		Column('follower', Integer, ForeignKey('table1.id'),primary_key=True))
-		Column('time', DateTime, default=datetime.utcnow())
+class Follow(UserMixin, Base):
+	__tablename__ = 'follow'
 
+	followed_id = Column(Integer, ForeignKey('table1.id'),primary_key=True)
+	follower_id = Column(Integer, ForeignKey('table1.id'),primary_key=True)
+	time = Column(DateTime, default=datetime.utcnow())
+
+	
 class Table1(UserMixin, Base):
-
 	__tablename__ = 'table1'
 
 	id = Column(Integer, autoincrement = True, primary_key = True)
@@ -41,10 +43,18 @@ class Table1(UserMixin, Base):
 	reg_time = Column(DateTime(), default = datetime.utcnow())
 	last_time = Column(DateTime(), default = datetime.utcnow())
 	introduction = Column(Text(), default = 'this is a lazy budy, and left nothing')
+
+	followed = relationship('Follow', primaryjoin=(id==Follow.follower_id),
+							backref=backref('follower',lazy='joined'), lazy='dynamic')
 	
-	
+	follower = relationship('Follow', primaryjoin=(id==Follow.followed_id),
+							backref=backref('followed',lazy='joined'), lazy='dynamic')
+
+
+
 	role = relationship('Role', back_populates='user')
 	articles = relationship('Post', back_populates='author',lazy='dynamic')
+
 
 	#---------------------------添加虚假信息，便于测试
 	@staticmethod
@@ -159,6 +169,18 @@ class Table1(UserMixin, Base):
 			return True
 		else:
 			return False
+#----------------------------------关注的人的列表,列表里是user对象
+
+	def followed_list(self):
+		l = []
+		db_session=DBSession
+		user = db_session.query(Table1).filter_by(id=self.id).first()
+		for i in user.followed:
+			l.append(i.followed)
+		return l
+		
+
+
 
 class Role(UserMixin, Base):
 	
@@ -322,6 +344,10 @@ class AnonymousUser(AnonymousUserMixin):
 		return False
 	def is_admin(self):
 		return False
+	def followed():
+		return None
+	def followed_list(self):
+		return []
 login_manager.anonymous_user = AnonymousUser
 #--------------------------------------------------------------------------------
 
