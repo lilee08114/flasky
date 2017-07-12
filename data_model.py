@@ -50,10 +50,11 @@ class Table1(UserMixin, Base):
 	follower = relationship('Follow', primaryjoin=(id==Follow.followed_id),
 							backref=backref('followed',lazy='joined'), lazy='dynamic')
 
-
+	
 
 	role = relationship('Role', back_populates='user')
 	articles = relationship('Post', back_populates='author',lazy='dynamic')
+	comment = relationship(Comment, back_populates='author',lazy='dynamic')
 	
 	#-----------------------------当前用户所关注的人的文章
 	def followed_article(self):
@@ -185,7 +186,18 @@ class Table1(UserMixin, Base):
 			l.append(i.followed)
 		return l
 		
-
+		
+class Comment(UserMixin, Base):
+	__tablename__ = 'comments'
+	
+	id = Column(Integer, primary_key=True, autoincrement=True)
+	post_id = Column(Integer, foreignKey('posts.id'))
+	author_id = Column(Integer, foreignKey('table1.id'))
+	he_said = Column(Text())
+	time = Column(DateTime(), default=datetime.utcnow())
+	
+	post = relationship(Post, back_populates = 'comment', lazy='dynamic')
+	author = relationship(Table1, back_populates='comment', lazy='dynamic')
 
 
 class Role(UserMixin, Base):
@@ -232,6 +244,7 @@ class Post(UserMixin, Base):
 	author_id =	Column(Integer, ForeignKey('table1.id'))
 
 	author = relationship('Table1', back_populates='articles')
+	comment = relationship(Comment, back_populates='post', lazy='dynamic')
 
 	@staticmethod
 	def art_html(target, value, oldvalue, initiator):
@@ -284,17 +297,16 @@ class Permission():
 	ADMIN = 0x80
 
 class Pagination():
-<<<<<<< HEAD
+
 	'''
 	该类返回需要在每个页面下面渲染的页数列表
 	根据当前页面数，返回每页应该渲染的查询对象
 	判断是否还有’前一页‘或者’后一页‘
 	'''
-	def __init__(self, db_session,per_page=5 ):
-=======
+
 
 	def __init__(self, db_session ,art_obj,per_page=5):
->>>>>>> 2d1a8af6c528497aa230e79dc358c24928000953
+	
 		from math import ceil
 		self.db_session=db_session
 		self.per_page=per_page
@@ -348,6 +360,7 @@ class Pagination():
 		if current_page==self.pages:
 			return False
 		return True
+
 		
 		
 
