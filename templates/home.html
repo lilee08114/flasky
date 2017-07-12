@@ -21,7 +21,12 @@
 		<a href="{{url_for('reg.regis')}}">申请账号</a>
 	{%else%}
 		<h4>{{wtf.quick_form(form)}}</h4>		
-		{{ pagedown.include_pagedown() }}		
+		{{ pagedown.include_pagedown() }}<br/>
+		{%if state%}	
+			你可以选择：<a href="{{url_for('main.show_all')}}">查看所有文章</a> 或者 只看自己关注的人
+		{%else%}
+			你可以选择：查看所有文章 或者 <a href="{{url_for('main.showOnlyMyFollow')}}">只看自己关注的人</a>
+		{%endif%}<br/>	
 	{%endif%}
 </h4><br/>
 

@@ -54,7 +54,13 @@ class Table1(UserMixin, Base):
 
 	role = relationship('Role', back_populates='user')
 	articles = relationship('Post', back_populates='author',lazy='dynamic')
-
+	
+	#-----------------------------当前用户所关注的人的文章
+	def followed_article(self):
+		db_session = DBSession
+		post_obj = db_session.query(Post).join(Follow, Follow.followed_id==Post.author_id).\
+									filter(Follow.follower_id==self.id)
+		return post_obj						
 
 	#---------------------------添加虚假信息，便于测试
 	@staticmethod
@@ -279,12 +285,13 @@ class Permission():
 
 class Pagination():
 
-	def __init__(self, db_session,per_page=5 ):
+	def __init__(self, db_session ,art_obj,per_page=5):
 		from math import ceil
 		self.db_session=db_session
 		self.per_page=per_page
-		self.art_num = db_session.query(Post).count()
+		self.art_num = art_obj.count()
 		self.pages = ceil(self.art_num/self.per_page)
+		self.art_obj = art_obj
 	
 	def iter_pages(self):
 		#返回页数列表
@@ -318,7 +325,7 @@ class Pagination():
 	
 	def item(self,current_page):
 		#返回每页的post查询对象
-		return self.db_session.query(Post).order_by(Post.post_time.desc()).offset(self.per_page*(current_page-1)).limit(self.per_page).all()
+		return self.art_obj.order_by(Post.post_time.desc()).offset(self.per_page*(current_page-1)).limit(self.per_page).all()
 		
 	def has_pre(self, current_page):
 		#看是否在第一页
