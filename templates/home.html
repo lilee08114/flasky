@@ -21,21 +21,36 @@
 		<a href="{{url_for('reg.regis')}}">申请账号</a>
 	{%else%}
 		<h4>{{wtf.quick_form(form)}}</h4>		
-		{{ pagedown.include_pagedown() }}		
+		{{ pagedown.include_pagedown() }}<br/>
+		{%if state%}	
+			你可以选择：<a href="{{url_for('main.show_all')}}">查看所有文章</a> 或者 只看自己关注的人
+		{%else%}
+			你可以选择：查看所有文章 或者 <a href="{{url_for('main.showOnlyMyFollow')}}">只看自己关注的人</a>
+		{%endif%}<br/>	
 	{%endif%}
 </h4><br/>
 
 {%for i in posts%}
-<p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Posted at {{moment(i.post_time).fromNow()}}<!--invalid for contemporary
- moment(i.post_time).fromNow--></p>
-<br/>
-<!--<p>{{i.article}}</p>-->
-{{i.article_html |safe}}
-<p><font size="2">文本连接：<a href="{{url_for('main.article_detail',id=i.id, _external=True)}}">{{url_for('main.article_detail',id=i.id, _external=True)}}</a>&nbsp;&nbsp;&nbsp;&nbsp;
-{%if i.author.id == current_user.id%}
-<a href="{{url_for('.home_page',id=i.id)}}">编辑文章</a></font></p>
-{%endif%}
-<hr/>
+	<p><a href="{{url_for('main.show_profile',username=i.author.username)}}"> {{i.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;粉丝:{{i.author.follower.count()}}&nbsp;&nbsp;&nbsp;&nbsp;
+	{% if current_user.id == i.author.id %}
+
+	{%elif i.author in fl%}
+		已关注,<a href="{{url_for('main.unsubscribe', his_id=i.author.id)}}">取消</a>
+	{%else%}
+		<a href="{{url_for('main.followsomeone', his_id=i.author.id)}}">关注他</a>
+	{%endif%}
+
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Posted at {{moment(i.post_time).fromNow()}}<!--invalid for contemporary
+ 	moment(i.post_time).fromNow--></p>
+	<br/>
+	<!--<p>{{i.article}}</p>-->
+	{{i.article_html |safe}}
+	<p><font size="2">文本连接：<a href="{{url_for('main.article_detail',id=i.id, _external=True)}}">{{url_for('main.article_detail',id=i.id, _external=True)}}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+
+	{%if i.author.id == current_user.id%}
+	<a href="{{url_for('.home_page',id=i.id)}}">编辑文章</a></font></p>
+	{%endif%}
+	<hr/>
 {%endfor%}	
 {%include '_page.html'%}
 </body>

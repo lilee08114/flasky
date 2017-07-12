@@ -35,6 +35,11 @@
 		<p>self&nbsp;introduction: {{target_user.introduction}}</p><br/>
 	{%endif%}
 	<a href="{{url_for('main.edit_profile')}}">Edit&nbsp;Profile</a><br/>
+	<p>{%if target_user.gender=='Man'%}
+			He
+		{%else%}
+			She
+		{%endif%}&nbsp;has&nbsp;{{target_user.follower.count()}}&nbsp;followers,&nbsp;followed by {{target_user.followed.count()}} user</p>
 	<p>articles list:</p><br/>
 	{%for i in article_object%}
 	{{i.article}}<br/>
