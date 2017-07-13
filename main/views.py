@@ -154,7 +154,17 @@ def article_detail():
 	db_session=DBSession
 	art_id = request.args.get('id',type=int)
 	post = db_session.query(Post).filter_by(id=art_id).first()
-	return render_template('article_detail.html', post=post)
+	comment_obj = db_session.query(Comment).filter_by(post_id=post.id)
+	comment = comment_obj.all()
+	
+	pag = Pagination(db_session=db_session,art_obj=comment_obj)
+	current_page = request.args.get('page', 1, type=int) #获取当前页面页数，默认为1
+	pag_list = pag.render(current_page)  #页号序列
+	pag_item = pag.item(current_page) #每页对应的查询对象
+	pre=pag.has_pre(current_page) #是否还有前一页
+	nex=pag.has_next(current_page)  #时候还有后一页
+	
+	return render_template('article_detail.html', post=post,comments=comment,is_1_page=(len(pag_list)==1, pre=pre, nex=nex, id=art_id, c_page=current_page,pag_list=pag_list),
 
 @main.route('/follow/<int:his_id>')
 @need_permission(Permission.FOLLOW)

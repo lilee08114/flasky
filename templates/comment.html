@@ -1,0 +1,11 @@
+<br/><hr/>
+{%for comment in comments%}
+	<p><a href="url_for('main.show_profile', username={{comment.author.username}})"{{comment.author.username}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{comment.time}}</p><br/>
+	{{comment.he_said}}
+{%endfor%}	
+
+{%if is_1_page%}
+
+{%else%}
+	{%include '_comment_page.html'%}
+{%endif%}
