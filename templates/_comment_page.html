@@ -1,20 +1,22 @@
 
 {%if pre%}
-	<a href="{{url_for('main.article_detail.html',id=id,page=c_page-1)}}"上一页</a>
+	<a href="{{url_for('main.article_detail',id=id,page=c_page-1)}}"上一页</a>
 {%else%}
 	上一页
 {%endif%}
 
 {%for i in pag_list%}
-	{%if i='...'%}
+	{%if i=='...'%}
+		{{i}}
+	{%elif i==c_page%}
 		{{i}}
 	{%else%}
-		<a href="{{url_for('main.article_detail.html',id=id,page=i)}}"{{i}}</a>
+		<a href="{{url_for('main.article_detail',id=id,page=i)}}">{{i}}</a>
 	{%endif%}
 {%endfor%}
 
 {%if nex%}
-	<a href="{{url_for('main.article_detail.html',id=id,page=c_page+1)}}"下一页</a>
+	<a href="{{url_for('main.article_detail',id=id,page=c_page+1)}}">下一页</a>
 {%else%}
 	下一页
 {%endif%}

@@ -1,11 +1,20 @@
 <br/><hr/>
 {%for comment in comments%}
-	<p><a href="url_for('main.show_profile', username={{comment.author.username}})"{{comment.author.username}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{comment.time}}</p><br/>
+	<p><a href="url_for('main.show_profile', username={{comment.author.username}})">{{comment.author.username}}</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{comment.time}}</p>
 	{{comment.he_said}}
-{%endfor%}	
-
+{%endfor%}	<br/>
+{%for i in get_flashed_messages()%}
+{{i}}
+{%endfor%}
 {%if is_1_page%}
 
 {%else%}
 	{%include '_comment_page.html'%}
+{%endif%}
+</br>
+
+{%if permission%}
+	{{wtf.quick_form(form)}}
+{%else%}
+	你暂时不能评论，或者未<a href="{{url_for('reg.load_in')}}">登陆</a>
 {%endif%}

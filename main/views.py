@@ -1,8 +1,8 @@
 from . import main
 from flask import render_template, flash, request,redirect,url_for
 from flask_login import login_required, current_user
-from ..forms import EditProfile,for_manager_editor,show_latest_articles,edit_my_article
-from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination, Follow
+from ..forms import EditProfile,for_manager_editor,show_latest_articles,edit_my_article,make_comment
+from ..data_model import DBSession, Table1, Permission, Role, Post, Pagination, Follow,Comment 
 from ..decorator import need_permission
 from datetime import datetime
 import bleach
@@ -20,10 +20,10 @@ def home_page():
 
 	#-------------------------------------------
 	if show_follow:
-		art_obj = current_user.followed_article()
+		art_obj = current_user.followed_article().order_by(Post.post_time.desc())
 		pag = Pagination(db_session=db_session, art_obj=art_obj)
 	else:
-		art_obj = db_session.query(Post)
+		art_obj = db_session.query(Post).order_by(Post.post_time.desc())
 		pag = Pagination(db_session=db_session,art_obj=art_obj)
 	
 	current_page = request.args.get('page', 1, type=int) #获取当前页面页数，默认为1
@@ -149,13 +149,23 @@ def manager_editor(usermail):
 	location = user.location
 	return render_template('main/manager_editor.html', form=form)
 
-@main.route('/article_detail/')
+@main.route('/article_detail/', methods=['GET','POST'])
 def article_detail():
+	form = make_comment()
 	db_session=DBSession
 	art_id = request.args.get('id',type=int)
 	post = db_session.query(Post).filter_by(id=art_id).first()
-	comment_obj = db_session.query(Comment).filter_by(post_id=post.id)
-	comment = comment_obj.all()
+	comment_obj = db_session.query(Comment).filter_by(post_id=post.id).\
+					order_by(Comment.time.asc())
+
+	if form.validate_on_submit():
+		new_comment = Comment(post_id=art_id, author_id=current_user.id,
+						he_said=form.comment.data)
+		db_session.add(new_comment)
+		db_session.commit()
+		flash('comment sucessfully!')
+		db_session.close()
+		return redirect(request.args.get('next') or request.referrer)
 	
 	pag = Pagination(db_session=db_session,art_obj=comment_obj)
 	current_page = request.args.get('page', 1, type=int) #获取当前页面页数，默认为1
@@ -163,8 +173,13 @@ def article_detail():
 	pag_item = pag.item(current_page) #每页对应的查询对象
 	pre=pag.has_pre(current_page) #是否还有前一页
 	nex=pag.has_next(current_page)  #时候还有后一页
+	permission = current_user.can(Permission.COMMENT)
+
 	
-	return render_template('article_detail.html', post=post,comments=comment,is_1_page=(len(pag_list)==1, pre=pre, nex=nex, id=art_id, c_page=current_page,pag_list=pag_list),
+	return render_template('article_detail.html', post=post,un=pag_list,
+					comments=pag_item,is_1_page=(len(pag_list)<=1), 
+					pre=pre, nex=nex, id=art_id, c_page=current_page,
+					pag_list=pag_list, form=form,permission=permission)
 
 @main.route('/follow/<int:his_id>')
 @need_permission(Permission.FOLLOW)
@@ -217,3 +232,22 @@ def show_all():
 	resp = redirect(url_for('main.home_page'))
 	resp.set_cookie('show_follow','',max_age=7*24*60*60)
 	return resp
+
+@main.route('/delete_comment/<int:id>')
+@login_required
+def delete_comment(id):
+	db_session = DBSession
+	comment = db_session.query(Comment).filter_by(id=id).first()
+	if comment.author.id == current_user.id:
+		db_session.delete(comment)
+		try:
+			db_session.commit()
+			flash('your comment has been deleted successfully!')
+		except:
+			db_session.rollback()
+			raise
+		finally:
+			db_session.close()
+	else:
+		abort(404)
+	return redirect(request.args.get('next') or request.referrer)

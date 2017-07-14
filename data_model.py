@@ -54,7 +54,7 @@ class Table1(UserMixin, Base):
 
 	role = relationship('Role', back_populates='user')
 	articles = relationship('Post', back_populates='author',lazy='dynamic')
-	comment = relationship(Comment, back_populates='author',lazy='dynamic')
+	comment = relationship('Comment', back_populates='author',lazy='dynamic')
 	
 	#-----------------------------当前用户所关注的人的文章
 	def followed_article(self):
@@ -191,13 +191,13 @@ class Comment(UserMixin, Base):
 	__tablename__ = 'comments'
 	
 	id = Column(Integer, primary_key=True, autoincrement=True)
-	post_id = Column(Integer, foreignKey('posts.id'))
-	author_id = Column(Integer, foreignKey('table1.id'))
+	post_id = Column(Integer, ForeignKey('posts.id'))
+	author_id = Column(Integer, ForeignKey('table1.id'))
 	he_said = Column(Text())
 	time = Column(DateTime(), default=datetime.utcnow())
 	
-	post = relationship(Post, back_populates = 'comment', lazy='dynamic')
-	author = relationship(Table1, back_populates='comment', lazy='dynamic')
+	post = relationship('Post', back_populates = 'comment')
+	author = relationship('Table1', back_populates='comment')
 
 
 class Role(UserMixin, Base):
@@ -346,7 +346,7 @@ class Pagination():
 	
 	def item(self,current_page):
 		#返回每页的post查询对象
-		return self.art_obj.order_by(Post.post_time.desc()).offset(self.per_page*(current_page-1)).limit(self.per_page).all()
+		return self.art_obj.offset(self.per_page*(current_page-1)).limit(self.per_page).all()
 		
 	def has_pre(self, current_page):
 		#看是否在第一页
@@ -377,6 +377,9 @@ class AnonymousUser(AnonymousUserMixin):
 		return None
 	def followed_list(self):
 		return []
+	def followed_article(self):
+		db_session=DBSession		
+		return db_session.query(Post)
 login_manager.anonymous_user = AnonymousUser
 #--------------------------------------------------------------------------------
 

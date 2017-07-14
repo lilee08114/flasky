@@ -85,13 +85,18 @@ def re_confirm():
 	token = current_user.generate_confirm_token()
 	send_mail(current_user.usermail, 'confirm', 'email/confirm_mail',user=current_user, token=token)
 	flash('we have sent another confirm letter to %s'%current_user.usermail)
-	return  render_template('home.html')
+	return  redirect(url_for('main.home_page'))
 
 #-------------------------------------检查邮件确认视图
 @reg.before_app_request
 def check_confirm():
 	print ('re-confirm has been cued')
-	if current_user.is_authenticated and (not current_user.confirm) and request.endpoint[:4] != 'reg.':
+	#下面有一个重大改动，之前是request.endpoint[0:4] != 'reg.'
+	#这样就会在这个钩子函数和上面的确认函数之间反复跳转，直到卡死
+	#上面确认函数本身蓝本是reg，跳转蓝本是main
+	#现在改成==，当访问reg蓝本内容都会被跳转到首页
+	#那么之前的！=原理是什么呢？
+	if current_user.is_authenticated and (not current_user.confirm) and request.endpoint[:4] == 'reg.':
 		return redirect(url_for('reg.re_confirm'))
 
 #-------------------------------------重置密码
