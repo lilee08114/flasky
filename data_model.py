@@ -244,7 +244,7 @@ class Post(UserMixin, Base):
 	author_id =	Column(Integer, ForeignKey('table1.id'))
 
 	author = relationship('Table1', back_populates='articles')
-	comment = relationship(Comment, back_populates='post', lazy='dynamic')
+	comment = relationship('Comment', back_populates='post',lazy='dynamic')
 
 	@staticmethod
 	def art_html(target, value, oldvalue, initiator):

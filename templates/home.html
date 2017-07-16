@@ -46,7 +46,7 @@
 	<br/>
 	<!--<p>{{i.article}}</p>-->
 	{{i.article_html |safe}}
-	<p><font size="2">文本连接：<a href="{{url_for('main.article_detail',id=i.id, _external=True)}}">{{url_for('main.article_detail',id=i.id, _external=True)}}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+	<p><font size="2">评论：<a href="{{url_for('main.article_detail',id=i.id)}}#comment">{{i.comment.count()}}</a>&nbsp;&nbsp;<a href="{{url_for('main.article_detail',id=i.id, _external=True)}}">{{url_for('main.article_detail',id=i.id, _external=True)}}</a>&nbsp;&nbsp;&nbsp;&nbsp;
 
 	{%if i.author.id == current_user.id%}
 	<a href="{{url_for('.home_page',id=i.id)}}">编辑文章</a></font></p>

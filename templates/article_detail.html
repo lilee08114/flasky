@@ -7,6 +7,7 @@
 <p>{{post.article_html|safe}}</p>
 
 <br/><hr/>
+<h5 id=comment>
 {%for comment in comments%}
 	<p><a href="url_for('main.show_profile', username={{comment.author.username}})">{{comment.author.username}}</a>
 	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{comment.time}}</p>
@@ -15,6 +16,7 @@
 		<a href="{{url_for('main.delete_comment', id=comment.id)}}">删除</a>
 	{%endif%}
 {%endfor%}	<br/><br/>
+</h5>
 {%for i in get_flashed_messages()%}
 {{i}}
 {%endfor%}

@@ -158,15 +158,6 @@ def article_detail():
 	comment_obj = db_session.query(Comment).filter_by(post_id=post.id).\
 					order_by(Comment.time.asc())
 
-	if form.validate_on_submit():
-		new_comment = Comment(post_id=art_id, author_id=current_user.id,
-						he_said=form.comment.data)
-		db_session.add(new_comment)
-		db_session.commit()
-		flash('comment sucessfully!')
-		db_session.close()
-		return redirect(request.args.get('next') or request.referrer)
-	
 	pag = Pagination(db_session=db_session,art_obj=comment_obj)
 	current_page = request.args.get('page', 1, type=int) #获取当前页面页数，默认为1
 	pag_list = pag.render(current_page)  #页号序列
@@ -175,6 +166,15 @@ def article_detail():
 	nex=pag.has_next(current_page)  #时候还有后一页
 	permission = current_user.can(Permission.COMMENT)
 
+	if form.validate_on_submit():
+		new_comment = Comment(post_id=art_id, author_id=current_user.id,
+						he_said=form.comment.data)
+		db_session.add(new_comment)
+		db_session.commit()
+		flash('comment sucessfully!')
+		db_session.close()
+		#return redirect(request.args.get('next') or request.referrer)
+		return redirect(url_for('.article_detail', id=art_id, page=pag_list[-1]))
 	
 	return render_template('article_detail.html', post=post,un=pag_list,
 					comments=pag_item,is_1_page=(len(pag_list)<=1), 
